@@ -23,6 +23,7 @@ cryptography==41.0.4
 cssselect==1.2.0
 customtkinter==5.2.0
 darkdetect==0.8.0
+django-admin-interface==0.28.5
 django-cors-headers==3.14.0
 django-celery-beat>=2.2.0
 django-environ==0.11.2
