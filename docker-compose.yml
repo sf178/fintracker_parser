@@ -1,0 +1,62 @@
+version: '3'
+
+services:
+  web:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    env_file:
+      - .env
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ./nginx/proxy_params:/etc/nginx/proxy_params
+    ports:
+      - "80:80"
+
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  celery:
+    build: .
+    command: celery -A fintracker_parser worker --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - web
+      - db
+      - redis
+    env_file:
+      - .env
+
+  beat:
+    build: .
+    command: celery -A fintracker_parser beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - .:/app
+    depends_on:
+      - web
+      - db
+      - redis
+    env_file:
+     - .env
+
+
+
+volumes:
+  postgres_data:
