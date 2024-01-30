@@ -23,6 +23,7 @@ keys = config["Avito"]["KEYS"].split(', ')
 max_price = config["Avito"].get("MAX_PRICE", "0") or "0"
 min_price = config["Avito"].get("MIN_PRICE", "0") or "0"
 
+
 @shared_task
 def parse_avito_task(src, property_id, city, square):
     city_url = get_city(city)
@@ -30,6 +31,30 @@ def parse_avito_task(src, property_id, city, square):
     parser = AvitoParse(src=src, property_id=property_id, url=correct_url, geo=city, square=square,
                         count=int(num_ads), min_price=min_price, max_price=max_price, keysword_list=keys)
     parser.parse()
+
+
+@shared_task
+def currency_rates_task():
+    api_key = 'db8d9f75688041cf831131e1b35655e3'  # Установите ваш API ключ
+    currencies = ['EUR', 'GBP', 'JPY', 'CNY', 'USD']  # Выбранные валюты
+
+    rates_in_rub = get_rates_in_rub(api_key, currencies)
+    if rates_in_rub:
+        # URL внешнего сервера, на который вы отправляете запрос
+        url = 'http://194.87.252.100/balance/currency/'
+
+        # Отправка POST-запроса на внешний сервер
+        try:
+            response = requests.post(url, json=rates_in_rub)
+            response.raise_for_status()
+            # Обработка успешного ответа
+            return response.json()
+        except requests.RequestException as e:
+            # Обработка ошибок сети и HTTP-ответов, указывающих на ошибку
+            print(f"Ошибка при отправке запроса: {e}")
+            return {'error': str(e)}
+    else:
+        return {'error': 'Не удалось получить данные о курсах валют'}
 
 
 def get_exchange_rates(api_key, base='USD'):
@@ -58,25 +83,4 @@ def get_rates_in_rub(api_key, currencies):
         return {currency: rates_in_rub[currency] for currency in currencies}
 
 
-@shared_task
-def currency_rates_task():
-    api_key = 'db8d9f75688041cf831131e1b35655e3'  # Установите ваш API ключ
-    currencies = ['EUR', 'GBP', 'JPY', 'CNY', 'USD']  # Выбранные валюты
 
-    rates_in_rub = get_rates_in_rub(api_key, currencies)
-    if rates_in_rub:
-        # URL внешнего сервера, на который вы отправляете запрос
-        url = 'http://194.87.252.100/balance/currency/'
-
-        # Отправка POST-запроса на внешний сервер
-        try:
-            response = requests.post(url, json=rates_in_rub)
-            response.raise_for_status()
-            # Обработка успешного ответа
-            return response.json()
-        except requests.RequestException as e:
-            # Обработка ошибок сети и HTTP-ответов, указывающих на ошибку
-            print(f"Ошибка при отправке запроса: {e}")
-            return {'error': str(e)}
-    else:
-        return {'error': 'Не удалось получить данные о курсах валют'}
