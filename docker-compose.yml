@@ -59,6 +59,8 @@ services:
   flower:
     image: mher/flower
     command: celery -A fintracker_parser flower --address=0.0.0.0 --port=5555
+    volumes:
+      - .:/app
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0  # Пример для Redis, измените на ваш брокер
     ports:
