@@ -63,6 +63,12 @@ services:
       - CELERY_BROKER_URL=redis://redis:6379/0  # Пример для Redis, измените на ваш брокер
     ports:
       - "5555:5555"
+    depends_on:
+      - celery
+      - web
+      - redis
+      - db
+      - beat
 
 
 volumes:
