@@ -37,6 +37,7 @@ drf-yasg==1.21.4
 exceptiongroup==1.1.2
 execnet==2.0.2
 fake-useragent==1.2.1
+flower==2.0.1
 fasteners==0.18
 filelock==3.13.1
 greenlet==2.0.2
