@@ -49,10 +49,10 @@ def currency_rates_task():
 
     # Выполнение запроса на аутентификацию
     try:
-        auth_response = requests.post(auth_url, json={'username': username, 'password': password})
+        auth_response = requests.post(auth_url, json={'phone_number': username, 'password': password})
         auth_response.raise_for_status()
         # Используйте auth_token в последующих запросах
-        auth_token = auth_response.json().get('token')
+        auth_token = auth_response.json().get('access')
     except requests.RequestException as e:
         print(f"Ошибка аутентификации: {e}")
         return {'error': str(e)}
