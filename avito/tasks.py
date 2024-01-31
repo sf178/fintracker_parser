@@ -32,6 +32,7 @@ keys = config["Avito"]["KEYS"].split(', ')
 max_price = config["Avito"].get("MAX_PRICE", "0") or "0"
 min_price = config["Avito"].get("MIN_PRICE", "0") or "0"
 
+
 def authenticate():
     """ Функция для аутентификации и получения токена. """
     auth_url = 'http://194.87.252.100/auth/login/'
@@ -72,15 +73,18 @@ def currency_rates_task():
     auth_token = authenticate()
     if not auth_token:
         return {'error': 'Ошибка аутентификации'}
+    data_to_send = []
 
     # Получение курсов валют
     rates_in_rub = get_rates_in_rub(api_key, currencies)
     if rates_in_rub:
-        data_to_send = [{'name': currency, 'price': rates_in_rub[currency]} for currency in rates_in_rub]
+        for currency in rates_in_rub:
+            data_to_send.append({'name': currency, 'price': rates_in_rub[currency]})
+        # data_to_send = [{'name': currency, 'price': rates_in_rub[currency]} for currency in rates_in_rub]
 
         try:
             headers = {'Authorization': f'Bearer {auth_token}'}
-            response = requests.post(data_url, data=data_to_send, headers=headers)
+            response = requests.post(data_url, json=data_to_send, headers=headers)
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
