@@ -42,10 +42,11 @@ def currency_rates_task():
     if rates_in_rub:
         # URL внешнего сервера, на который вы отправляете запрос
         url = 'http://194.87.252.100/balance/currency/'
-
+        data_to_send = [{'name': currency, 'price': rates_in_rub[currency]} for currency in rates_in_rub]
+        # print(data_to_send)
         # Отправка POST-запроса на внешний сервер
         try:
-            response = requests.post(url, json=rates_in_rub)
+            response = requests.post(url, json=data_to_send)
             response.raise_for_status()
             # Обработка успешного ответа
             return response.json()
@@ -53,6 +54,7 @@ def currency_rates_task():
             # Обработка ошибок сети и HTTP-ответов, указывающих на ошибку
             print(f"Ошибка при отправке запроса: {e}")
             return {'error': str(e)}
+
     else:
         return {'error': 'Не удалось получить данные о курсах валют'}
 
@@ -83,4 +85,4 @@ def get_rates_in_rub(api_key, currencies):
         return {currency: rates_in_rub[currency] for currency in currencies}
 
 
-
+currency_rates_task()
