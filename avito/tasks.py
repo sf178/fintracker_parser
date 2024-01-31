@@ -46,10 +46,13 @@ def currency_rates_task():
     # Учетные данные для входа
     username = env('SERVICE_USER')
     password = env('SERVICE_PASSWORD')
-
+    auth_data = {
+        'phone_number': env('SERVICE_USER'),
+        'password': env('SERVICE_PASSWORD')
+    }
     # Выполнение запроса на аутентификацию
     try:
-        auth_response = requests.post(auth_url, json={'phone_number': username, 'password': password})
+        auth_response = requests.post(auth_url, data=auth_data)
         auth_response.raise_for_status()
         # Используйте auth_token в последующих запросах
         auth_token = auth_response.json().get('access')
