@@ -85,4 +85,3 @@ def get_rates_in_rub(api_key, currencies):
         return {currency: rates_in_rub[currency] for currency in currencies}
 
 
-currency_rates_task()
