@@ -15,7 +15,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from avito.city import get_city
-from tasks import parse_avito_cars_task, parse_avito_prop_task
+from avito.tasks import parse_avito_cars_task, parse_avito_prop_task
 
 
 def generate_year_url_segment(year):
