@@ -81,12 +81,16 @@ class AvitoParse:
             raise Exception("Не удалось подключиться к сайту с использованием прокси")
 
     def _setup_driver_with_proxy(self, proxy):
-        chrome_options = Options()
-        chrome_options.add_argument("--headless")  # Добавить headless режим
-        service = Service(executable_path=ChromeDriverManager().install())
-        # chrome_options.add_argument(f'--proxy-server={proxy}')
-        self.driver = webdriver.Chrome(service=service, options=chrome_options)
-        print('opana')
+        try:
+            chrome_options = Options()
+            chrome_options.add_argument("--headless")  # Добавить headless режим
+            chrome_options.add_argument("--no-sandbox")  # Решение проблем с правами
+            service = Service(executable_path=ChromeDriverManager().install())
+            # chrome_options.add_argument(f'--proxy-server={proxy}')
+            self.driver = webdriver.Chrome(service=service, options=chrome_options)
+            print('opana')
+        except Exception as e:
+            print(f"Ошибка при инициализации драйвера: {e}")
 
     def __paginator(self):
         """Кнопка далее"""
@@ -451,9 +455,9 @@ class AvitoParse:
         """Метод для вызова"""
         with SB(uc=True,
                 headed=True if self.debug_mode else False,
-                headless=True if not self.debug_mode else False,
+                headless2=True if not self.debug_mode else False,
                 page_load_strategy="eager",
-                block_images=True,
+                block_images=True
                 #skip_js_waits=True,
                 ) as self.driver:
             try:
@@ -466,29 +470,29 @@ class AvitoParse:
                 #logger.error(f"Ошибка: {error}")
 
 
-if __name__ == '__main__':
-    """Здесь заменить данные на свои"""
-    import configparser
-
-    config_cars = configparser.ConfigParser()  # создаём объекта парсера
-    config_cars.read("settings_cars.ini")  # читаем конфиг
-
-    try:
-        """Багфикс проблем с экранированием"""
-        url = config_cars["Avito"]["URL"]  # начальный url
-    except Exception:
-        with open('settings_cars.ini') as file:
-            line_url = file.readlines()[1]
-            regex = r"http.+"
-            url = re.search(regex, line_url)[0]
-    # chat_id = config_prop["Avito"]["CHAT_ID"]
-    # token = config_prop["Avito"]["TG_TOKEN"]
-    num_ads = config_cars["Avito"]["NUM_ADS"]
-    freq = config_cars["Avito"]["FREQ"]
-    keys = config_cars["Avito"]["KEYS"]
-    max_price = config_cars["Avito"].get("MAX_PRICE", "0") or "0"
-    min_price = config_cars["Avito"].get("MIN_PRICE", "0") or "0"
-    geo = config_cars["Avito"].get("GEO", "") or ""
+# if __name__ == '__main__':
+#     """Здесь заменить данные на свои"""
+#     import configparser
+#
+#     config_cars = configparser.ConfigParser()  # создаём объекта парсера
+#     config_cars.read("settings_cars.ini")  # читаем конфиг
+#
+#     try:
+#         """Багфикс проблем с экранированием"""
+#         url = config_cars["Avito"]["URL"]  # начальный url
+#     except Exception:
+#         with open('settings_cars.ini') as file:
+#             line_url = file.readlines()[1]
+#             regex = r"http.+"
+#             url = re.search(regex, line_url)[0]
+#     # chat_id = config_prop["Avito"]["CHAT_ID"]
+#     # token = config_prop["Avito"]["TG_TOKEN"]
+#     num_ads = config_cars["Avito"]["NUM_ADS"]
+#     freq = config_cars["Avito"]["FREQ"]
+#     keys = config_cars["Avito"]["KEYS"]
+#     max_price = config_cars["Avito"].get("MAX_PRICE", "0") or "0"
+#     min_price = config_cars["Avito"].get("MIN_PRICE", "0") or "0"
+#     geo = config_cars["Avito"].get("GEO", "") or ""
 
     # if token and chat_id:
     #     params = {
