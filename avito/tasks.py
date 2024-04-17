@@ -11,8 +11,8 @@ from .city import *
 from fintracker_parser.settings import env
 import logging
 
-config_prop = configparser.ConfigParser()  # создаём объекта парсера
-config_prop.read("/app/avito/settings_prop.ini")  # читаем конфиг
+# config_prop = configparser.ConfigParser()  # создаём объекта парсера
+# config_prop.read("/app/avito/settings_prop.ini")  # читаем конфиг
 
 # Настройка логгера
 logger = logging.getLogger(__name__)
@@ -20,19 +20,19 @@ logging.basicConfig(level=logging.INFO)
 
 
 
-try:
-    """Багфикс проблем с экранированием"""
-    url = config_prop["Avito"]["URL"]  # начальный url
-except Exception:
-    with open('/app/avito/settings.ini') as file:
-        line_url = file.readlines()[1]
-        regex = r"http.+"
-        url = re.search(regex, line_url)[0]
-num_ads = config_prop["Avito"]["NUM_ADS"]
-freq = config_prop["Avito"]["FREQ"]
-keys = config_prop["Avito"]["KEYS"].split(', ')
-max_price = config_prop["Avito"].get("MAX_PRICE", "0") or "0"
-min_price = config_prop["Avito"].get("MIN_PRICE", "0") or "0"
+# try:
+#     """Багфикс проблем с экранированием"""
+#     url = config_prop["Avito"]["URL"]  # начальный url
+# except Exception:
+#     with open('/app/avito/settings.ini') as file:
+#         line_url = file.readlines()[1]
+#         regex = r"http.+"
+#         url = re.search(regex, line_url)[0]
+# num_ads = config_prop["Avito"]["NUM_ADS"]
+# freq = config_prop["Avito"]["FREQ"]
+# keys = config_prop["Avito"]["KEYS"].split(', ')
+# max_price = config_prop["Avito"].get("MAX_PRICE", "0") or "0"
+# min_price = config_prop["Avito"].get("MIN_PRICE", "0") or "0"
 
 
 async def count_average(file_path):
