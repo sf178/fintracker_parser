@@ -24,8 +24,8 @@ from fintracker_parser import settings
 from notifiers.logging import NotificationHandler
 from seleniumbase import SB
 from loguru import logger
-from .locator import LocatorAvito
-from .proxy import get_proxy
+from locator import LocatorAvito
+from proxy import get_proxy
 # from selenium import webdriver
 # from webdriver_manager.chrome import ChromeDriverManager
 #
@@ -67,9 +67,13 @@ class AvitoParse:
     def __get_url(self):
         for proxy in self.proxy_list:
             try:
+                print('op')
                 self._setup_driver_with_proxy(proxy)  # Настроим драйвер с прокси
-                self.driver.get(self.url)  # Используйте get вместо open
+                print('zaloopa1')
+                a = self.driver.get(self.url)  # Используйте get вместо open
+                print(a)
                 if "Доступ ограничен" not in self.driver.title:
+
                     break  # Успешное подключение, выходим из цикла
             except Exception as error:
                 logger.error(f"Ошибка при подключении с прокси {proxy}: {error}")
@@ -82,6 +86,7 @@ class AvitoParse:
         service = Service(executable_path=ChromeDriverManager().install())
         # chrome_options.add_argument(f'--proxy-server={proxy}')
         self.driver = webdriver.Chrome(service=service, options=chrome_options)
+        print('opana')
 
     def __paginator(self):
         """Кнопка далее"""
@@ -454,62 +459,65 @@ class AvitoParse:
             try:
                 self.__get_url()
                 self.__paginator()
-                self.send_file_name_to_server()
+                # self.send_file_name_to_server()
 
             except Exception as error:
                 print({error})
                 #logger.error(f"Ошибка: {error}")
 
 
-# if __name__ == '__main__':
-#     """Здесь заменить данные на свои"""
-#     import configparser
-#
-#     config = configparser.ConfigParser()  # создаём объекта парсера
-#     config.read("settings.ini")  # читаем конфиг
-#
-#     try:
-#         """Багфикс проблем с экранированием"""
-#         url = config["Avito"]["URL"]  # начальный url
-#     except Exception:
-#         with open('settings.ini') as file:
-#             line_url = file.readlines()[1]
-#             regex = r"http.+"
-#             url = re.search(regex, line_url)[0]
-#     # chat_id = config["Avito"]["CHAT_ID"]
-#     # token = config["Avito"]["TG_TOKEN"]
-#     num_ads = config["Avito"]["NUM_ADS"]
-#     freq = config["Avito"]["FREQ"]
-#     keys = config["Avito"]["KEYS"]
-#     max_price = config["Avito"].get("MAX_PRICE", "0") or "0"
-#     min_price = config["Avito"].get("MIN_PRICE", "0") or "0"
-#     geo = config["Avito"].get("GEO", "") or ""
-#
-#     # if token and chat_id:
-#     #     params = {
-#     #         'token': token,
-#     #         'chat_id': chat_id
-#     #     }
-#     #     tg_handler = NotificationHandler("telegram", defaults=params)
-#     #
-#     #     """Все логи уровня SUCCESS и выше отсылаются в телегу"""
-#     #     logger.add(tg_handler, level="SUCCESS", format="{message}")
-#
-#     while True:
-#         try:
-#             AvitoParse(
-#                 url=url,
-#                 count=int(num_ads),
-#                 keysword_list=keys.split(","),
-#                 max_price=int(max_price),
-#                 min_price=int(min_price),
-#                 geo=geo
-#             ).parse()
-#             logger.info("Пауза")
-#             time.sleep(int(freq) * 60)
-#         except Exception as error:
-#             logger.error(error)
-#             logger.error('Произошла ошибка, но работа будет продолжена через 30 сек. '
-#                          'Если ошибка повторится несколько раз - перезапустите скрипт.'
-#                          'Если и это не поможет - обратитесь к разработчику по ссылке ниже')
-#             time.sleep(30)
+if __name__ == '__main__':
+    """Здесь заменить данные на свои"""
+    import configparser
+
+    config_cars = configparser.ConfigParser()  # создаём объекта парсера
+    config_cars.read("settings_cars.ini")  # читаем конфиг
+
+    try:
+        """Багфикс проблем с экранированием"""
+        url = config_cars["Avito"]["URL"]  # начальный url
+    except Exception:
+        with open('settings_cars.ini') as file:
+            line_url = file.readlines()[1]
+            regex = r"http.+"
+            url = re.search(regex, line_url)[0]
+    # chat_id = config_prop["Avito"]["CHAT_ID"]
+    # token = config_prop["Avito"]["TG_TOKEN"]
+    num_ads = config_cars["Avito"]["NUM_ADS"]
+    freq = config_cars["Avito"]["FREQ"]
+    keys = config_cars["Avito"]["KEYS"]
+    max_price = config_cars["Avito"].get("MAX_PRICE", "0") or "0"
+    min_price = config_cars["Avito"].get("MIN_PRICE", "0") or "0"
+    geo = config_cars["Avito"].get("GEO", "") or ""
+
+    # if token and chat_id:
+    #     params = {
+    #         'token': token,
+    #         'chat_id': chat_id
+    #     }
+    #     tg_handler = NotificationHandler("telegram", defaults=params)
+    #
+    #     """Все логи уровня SUCCESS и выше отсылаются в телегу"""
+    #     logger.add(tg_handler, level="SUCCESS", format="{message}")
+
+    # while True:
+    #     try:
+    #         print('start parsing')
+    #         AvitoParse(
+    #             src='kok',
+    #             url=url,
+    #             count=int(num_ads),
+    #             keysword_list=keys.split(","),
+    #             max_price=int(max_price),
+    #             min_price=int(min_price),
+    #             geo=geo
+    #         ).parse()
+    #         print('started')
+    #         logger.info("Пауза")
+    #         time.sleep(int(freq) * 60)
+    #     except Exception as error:
+    #         logger.error(error)
+    #         logger.error('Произошла ошибка, но работа будет продолжена через 30 сек. '
+    #                      'Если ошибка повторится несколько раз - перезапустите скрипт.'
+    #                      'Если и это не поможет - обратитесь к разработчику по ссылке ниже')
+    #         time.sleep(30)

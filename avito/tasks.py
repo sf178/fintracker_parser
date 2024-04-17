@@ -1,5 +1,7 @@
+import csv
 import json
 
+import aiofiles
 import requests
 from celery import shared_task
 from .parser_cls import AvitoParse  # Импортируйте ваш парсер
@@ -9,8 +11,8 @@ from .city import *
 from fintracker_parser.settings import env
 import logging
 
-config = configparser.ConfigParser()  # создаём объекта парсера
-config.read("/app/avito/settings.ini")  # читаем конфиг
+config_prop = configparser.ConfigParser()  # создаём объекта парсера
+config_prop.read("/app/avito/settings_prop.ini")  # читаем конфиг
 
 # Настройка логгера
 logger = logging.getLogger(__name__)
@@ -20,17 +22,38 @@ logging.basicConfig(level=logging.INFO)
 
 try:
     """Багфикс проблем с экранированием"""
-    url = config["Avito"]["URL"]  # начальный url
+    url = config_prop["Avito"]["URL"]  # начальный url
 except Exception:
     with open('/app/avito/settings.ini') as file:
         line_url = file.readlines()[1]
         regex = r"http.+"
         url = re.search(regex, line_url)[0]
-num_ads = config["Avito"]["NUM_ADS"]
-freq = config["Avito"]["FREQ"]
-keys = config["Avito"]["KEYS"].split(', ')
-max_price = config["Avito"].get("MAX_PRICE", "0") or "0"
-min_price = config["Avito"].get("MIN_PRICE", "0") or "0"
+num_ads = config_prop["Avito"]["NUM_ADS"]
+freq = config_prop["Avito"]["FREQ"]
+keys = config_prop["Avito"]["KEYS"].split(', ')
+max_price = config_prop["Avito"].get("MAX_PRICE", "0") or "0"
+min_price = config_prop["Avito"].get("MIN_PRICE", "0") or "0"
+
+
+def count_average(file_path):
+    async with aiofiles.open(file_path, mode='r', encoding='utf-8') as f:
+        reader = csv.reader(f)
+        total_price = 0
+        count = 0
+        async for row in reader:
+            if count == 0:  # Пропуск заголовка
+                count += 1
+                continue
+            price = float(row[1])  # Предполагается, что цена находится во втором столбце
+            if price > 10:
+                total_price += price
+                count += 1
+
+    # Вычисление средней цены
+    if count > 1:
+        average_price = total_price / (count - 1)
+    else:
+        average_price = 0
 
 
 def authenticate():
@@ -55,11 +78,20 @@ def authenticate():
 
 
 @shared_task
-def parse_avito_task(src, property_id, city, square):
-    city_url = get_city(city)
-    correct_url = url.replace('%city%', city_url)
-    parser = AvitoParse(src=src, property_id=property_id, url=correct_url, geo=city, square=square,
-                        count=int(num_ads), min_price=min_price, max_price=max_price, keysword_list=keys)
+def parse_avito_cars_task(src, property_id, url, count, min_price, max_price, keys):
+    # city_url = get_city(city)
+    # correct_url = url.replace('%city%', city_url)
+    parser = AvitoParse(src=src, property_id=property_id, url=url,
+                        count=int(count), min_price=min_price, max_price=max_price, keysword_list=keys)
+    parser.parse()
+
+
+@shared_task
+def parse_avito_prop_task(src, property_id, url, city, square, count, min_price, max_price, keys):
+    # city_url = get_city(city)
+    # correct_url = url.replace('%city%', city_url)
+    parser = AvitoParse(src=src, property_id=property_id, url=url, geo=city, square=square,
+                        count=int(count), min_price=min_price, max_price=max_price, keysword_list=keys)
     parser.parse()
 
 
