@@ -24,7 +24,7 @@ from fintracker_parser import settings
 from notifiers.logging import NotificationHandler
 from seleniumbase import SB
 from loguru import logger
-from locator import LocatorAvito
+from avito.locator import LocatorAvito
 from proxy import get_proxy
 # from selenium import webdriver
 # from webdriver_manager.chrome import ChromeDriverManager
