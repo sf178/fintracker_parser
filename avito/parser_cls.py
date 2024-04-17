@@ -80,11 +80,15 @@ class AvitoParse:
         else:
             raise Exception("Не удалось подключиться к сайту с использованием прокси")
 
-    def _setup_driver_with_proxy(self, proxy):
+    def _setup_driver_with_proxy(self):
         try:
             chrome_options = Options()
             chrome_options.add_argument("--headless")  # Добавить headless режим
             chrome_options.add_argument("--no-sandbox")  # Решение проблем с правами
+            chrome_options.add_argument("--disable-dev-shm-usage")  # Решение проблем с правами
+            chrome_options.add_argument("--disable-gpu")  # Решение проблем с правами
+            chrome_options.add_argument("--disable-extensions")  # Решение проблем с правами
+
             service = Service(executable_path=ChromeDriverManager().install())
             # chrome_options.add_argument(f'--proxy-server={proxy}')
             self.driver = webdriver.Chrome(service=service, options=chrome_options)
@@ -453,20 +457,20 @@ class AvitoParse:
 
     def parse(self):
         """Метод для вызова"""
-        with SB(uc=True,
-                headed=True if self.debug_mode else False,
-                headless2=True if not self.debug_mode else False,
-                page_load_strategy="eager",
-                block_images=True
-                #skip_js_waits=True,
-                ) as self.driver:
-            try:
-                self.__get_url()
-                self.__paginator()
+        # with SB(uc=True,
+        #         # headed=True if self.debug_mode else False,
+        #         headless=True if not self.debug_mode else False,
+        #         page_load_strategy="eager",
+        #         block_images=True
+        #         #skip_js_waits=True,
+        #         ) as self.driver:
+        self._setup_driver_with_proxy()
+        try:
+            self.__get_url()
+            self.__paginator()
                 # self.send_file_name_to_server()
-
-            except Exception as error:
-                print({error})
+        except Exception as error:
+            print({error})
                 #logger.error(f"Ошибка: {error}")
 
 
