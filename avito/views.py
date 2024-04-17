@@ -92,7 +92,7 @@ class ParserView(APIView):
                 count=count,
                 min_price=min_price,
                 max_price=max_price,
-                keywords_list=keywords_list
+                keys=keywords_list
             )
         else:
             city = data.get('city', '')
@@ -123,7 +123,7 @@ class ParserView(APIView):
                 count=count,
                 min_price=min_price,
                 max_price=max_price,
-                keywords_list=keywords_list
+                keys=keywords_list
             )
         return Response({'message': 'Parsing task has been started.'}, status=status.HTTP_202_ACCEPTED)
 
