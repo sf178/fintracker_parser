@@ -35,7 +35,7 @@ max_price = config_prop["Avito"].get("MAX_PRICE", "0") or "0"
 min_price = config_prop["Avito"].get("MIN_PRICE", "0") or "0"
 
 
-def count_average(file_path):
+async def count_average(file_path):
     async with aiofiles.open(file_path, mode='r', encoding='utf-8') as f:
         reader = csv.reader(f)
         total_price = 0
