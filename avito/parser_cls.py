@@ -495,8 +495,7 @@ class AvitoParse:
             options.headless = False  # Если в debug режиме, отключаем headless
         else:
             options.headless = True  # Включаем headless режим
-        options.set_capability('platform', 'ANY')
-        # Дополнительные настройки, если требуются
+        options.set_capability('platformName', 'ANY')        # Дополнительные настройки, если требуются
         # options.add_argument("--disable-gpu")  # Если есть проблемы с производительностью
         # options.add_argument("window-size=1200x600")  # Задаем размер окна
 
