@@ -495,7 +495,7 @@ class AvitoParse:
             options.headless = False  # Если в debug режиме, отключаем headless
         else:
             options.headless = True  # Включаем headless режим
-
+        options.set_capability('platform', 'ANY')
         # Дополнительные настройки, если требуются
         # options.add_argument("--disable-gpu")  # Если есть проблемы с производительностью
         # options.add_argument("window-size=1200x600")  # Задаем размер окна
@@ -503,7 +503,7 @@ class AvitoParse:
         # Подключаемся к Selenium Server
         self.driver = webdriver.Remote(
             command_executor=selenium_url,
-            desired_capabilities=options.to_capabilities()
+            options=options
         )
         # self._setup_driver_with_proxy()
         try:
