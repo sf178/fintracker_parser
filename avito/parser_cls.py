@@ -51,6 +51,7 @@ class AvitoParse:
                  square: float = 0.0,
                  debug_mode: int = 0
                  ):
+        self.driver = None
         self.url = url
         self.sender = src
         self.keys_word = keysword_list
@@ -93,7 +94,7 @@ class AvitoParse:
             # chrome_options.add_argument("--no-sandbox")  # Решение проблем с правами
             # chrome_options.add_argument("--disable-dev-shm-usage")  # Решение проблем с правами
             # chrome_options.add_argument("--disable-gpu")  # Решение проблем с правами
-            chrome_options.add_argument("--disable-extensions")  # Решение проблем с правами
+            # chrome_options.add_argument("--disable-extensions")  # Решение проблем с правами
 
             service = Service(executable_path=ChromeDriverManager().install())
             # chrome_options.add_argument(f'--proxy-server={proxy}')
@@ -477,20 +478,40 @@ class AvitoParse:
 
     def parse(self):
         """Метод для вызова"""
-        with SB(uc=True,
-                # headed=True if self.debug_mode else False,
-                headless=True,
-                page_load_strategy="eager",
-                block_images=True
-                #skip_js_waits=True,
-                ) as self.driver:
-        # self._setup_driver_with_proxy()
-            try:
-                self.__get_url()
-                self.__paginator()
+        # with SB(uc=True,
+        #         # headed=True if self.debug_mode else False,
+        #         headless=True,
+        #         page_load_strategy="eager",
+        #         block_images=True
+        #         #skip_js_waits=True,
+        #         ) as self.driver:
 
-            except Exception as error:
-                print({error})
+        selenium_url = "http://localhost:4444/wd/hub"
+
+        # Настройка опций для Chrome
+        from selenium.webdriver.chrome.options import Options
+        options = Options()
+        if self.debug_mode:
+            options.headless = False  # Если в debug режиме, отключаем headless
+        else:
+            options.headless = True  # Включаем headless режим
+
+        # Дополнительные настройки, если требуются
+        # options.add_argument("--disable-gpu")  # Если есть проблемы с производительностью
+        # options.add_argument("window-size=1200x600")  # Задаем размер окна
+
+        # Подключаемся к Selenium Server
+        self.driver = webdriver.Remote(
+            command_executor=selenium_url,
+            desired_capabilities=options.to_capabilities()
+        )
+        # self._setup_driver_with_proxy()
+        try:
+            self.__get_url()
+            self.__paginator()
+
+        except Exception as error:
+            print({error})
                     #logger.error(f"Ошибка: {error}")
 
 
