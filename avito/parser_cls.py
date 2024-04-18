@@ -486,7 +486,7 @@ class AvitoParse:
         #         #skip_js_waits=True,
         #         ) as self.driver:
 
-        selenium_url = "http://localhost:4444/wd/hub"
+        selenium_url = "http://selenium:4444/wd/hub"
 
         # Настройка опций для Chrome
         from selenium.webdriver.chrome.options import Options
