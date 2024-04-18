@@ -81,18 +81,32 @@ def authenticate():
 def parse_avito_cars_task(src, property_id, url, count, min_price, max_price, keys):
     # city_url = get_city(city)
     # correct_url = url.replace('%city%', city_url)
-    parser = AvitoParse(src=src, property_id=property_id, url=url,
-                        count=int(count), min_price=min_price, max_price=max_price, keysword_list=keys)
-    parser.parse()
+    parsing = True
+    count = 0
+    while parsing:
+        parser = AvitoParse(src=src, property_id=property_id, url=url,
+                            count=int(count), min_price=min_price, max_price=max_price, keysword_list=keys)
+        parser.parse()
+        count += 1
+        if count >= 10:
+            parsing = False
+
 
 
 @shared_task
 def parse_avito_prop_task(src, property_id, url, city, square, count, min_price, max_price, keys):
     # city_url = get_city(city)
     # correct_url = url.replace('%city%', city_url)
-    parser = AvitoParse(src=src, property_id=property_id, url=url, geo=city, square=square,
-                        count=int(count), min_price=min_price, max_price=max_price, keysword_list=keys)
-    parser.parse()
+    parsing = True
+    count = 0
+    while parsing:
+
+        parser = AvitoParse(src=src, property_id=property_id, url=url, geo=city, square=square,
+                            count=int(count), min_price=min_price, max_price=max_price, keysword_list=keys)
+        parser.parse()
+        count += 1
+        if count >= 10:
+            parsing = False
 
 
 @shared_task

@@ -80,7 +80,7 @@ class ParserView(APIView):
             if year:
                 year_segment = generate_year_url_segment(int(year))
                 url += year_segment
-            keywords_list = ['автомобиль', mark, model, year]  # Дополнительные ключевые слова можно включить
+            keywords_list = ['автомобиль', str(mark), str(model), str(year)]  # Дополнительные ключевые слова можно включить
             if not (src and url and keywords_list):
                 return Response({'error': 'Insufficient data to start parsing.'}, status=status.HTTP_400_BAD_REQUEST)
             parse_avito_cars_task.delay(

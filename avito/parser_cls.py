@@ -19,6 +19,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from django.urls import reverse
 from fintracker_parser import settings
+from selenium.webdriver.common.print_page_options import PrintOptions
 
 
 from notifiers.logging import NotificationHandler
@@ -65,28 +66,33 @@ class AvitoParse:
         self.proxy_list = get_proxy()  # Получаем список прокси
 
     def __get_url(self):
-        for proxy in self.proxy_list:
-            try:
-                print('op')
-                self._setup_driver_with_proxy(proxy)  # Настроим драйвер с прокси
-                print('zaloopa1')
-                a = self.driver.get(self.url)  # Используйте get вместо open
-                print(a)
-                if "Доступ ограничен" not in self.driver.title:
-
-                    break  # Успешное подключение, выходим из цикла
-            except Exception as error:
-                logger.error(f"Ошибка при подключении с прокси {proxy}: {error}")
-        else:
-            raise Exception("Не удалось подключиться к сайту с использованием прокси")
+        # for proxy in self.proxy_list:
+        try:
+                # print('op')
+                # self._setup_driver_with_proxy()  # Настроим драйвер с прокси
+                # print('zaloopa1')
+              # Используйте get вместо open
+            self.driver.get(self.url)
+            # time.sleep(60)
+            logger.info(f'Ссылка: {self.url}')
+            search = self.driver.find_element(By.CSS_SELECTOR, "[data-marker='search-form/suggest']")
+            search.send_keys(f'{self.keys_word[0]} {self.keys_word[1]} {self.keys_word[2]}')
+            search_btn = self.driver.find_element(By.CSS_SELECTOR, "[data-marker='search-form/submit-button']")
+            search_btn.click()
+            self.driver.open_new_window()  # сразу открываем и вторую вкладку
+            self.driver.switch_to_window(window=0)
+        # if "Доступ ограничен" not in self.driver.title:
+            #     pass  # Успешное подключение, выходим из цикла
+        except Exception as error:
+            logger.error(f"Ошибка при подключении: {error}")
 
     def _setup_driver_with_proxy(self):
         try:
             chrome_options = Options()
             chrome_options.add_argument("--headless")  # Добавить headless режим
-            chrome_options.add_argument("--no-sandbox")  # Решение проблем с правами
-            chrome_options.add_argument("--disable-dev-shm-usage")  # Решение проблем с правами
-            chrome_options.add_argument("--disable-gpu")  # Решение проблем с правами
+            # chrome_options.add_argument("--no-sandbox")  # Решение проблем с правами
+            # chrome_options.add_argument("--disable-dev-shm-usage")  # Решение проблем с правами
+            # chrome_options.add_argument("--disable-gpu")  # Решение проблем с правами
             chrome_options.add_argument("--disable-extensions")  # Решение проблем с правами
 
             service = Service(executable_path=ChromeDriverManager().install())
@@ -99,6 +105,10 @@ class AvitoParse:
     def __paginator(self):
         """Кнопка далее"""
         logger.info('Страница успешно загружена. Просматриваю объявления')
+        # page = self.driver.print_page()
+        # with open('page.html', mode='w', encoding='utf-8') as f:
+        #     f.write(page)
+        # logger.info('Заголовок страницы:', page)
         self.__create_file_csv()
         while self.count > 0:
             self.__parse_page()
@@ -125,8 +135,15 @@ class AvitoParse:
         else:
             with open('viewed.txt', 'w') as file:
                 self.viewed_list = []
+        # titles = self.driver.find_elements(By.CSS_SELECTOR,'div[data-marker="item"]')
+        # elements = WebDriverWait(self.driver, 10).until(
+        #     EC.presence_of_all_elements_located((By.CSS_SELECTOR,'data-marker="item"'))
+        # )
+        # print(elements)
 
-        titles = self.driver.find_elements(*LocatorAvito.TITLES)
+        titles = self.driver.find_elements(By.CSS_SELECTOR, "[data-marker='item']")
+
+        # titles = self.driver.find_elements(*LocatorAvito.TITLES)
         for title in titles:
             name = title.find_element(*LocatorAvito.NAME).text
 
@@ -239,14 +256,15 @@ class AvitoParse:
         """Парсит для доп. информации открытое объявление на отдельной вкладке"""
 
         # Получаем идентификаторы всех открытых окон
-        windows = self.driver.window_handles
+        # windows = self.driver.window_handles
 
         # Переключаемся на второе окно (если оно есть) или открываем новое
-        if len(windows) > 1:
-            self.driver.switch_to.window(windows[1])
-        else:
-            self.driver.execute_script("window.open();")
-            self.driver.switch_to.window(self.driver.window_handles[1])
+        # if len(windows) > 1:
+        #     self.driver.switch_to.window(windows[1])
+        # else:
+        #     self.driver.execute_script("window.open();")
+        #     self.driver.switch_to.window(self.driver.window_handles[1])
+        self.driver.switch_to_window(window=1)
 
         self.driver.get(url)
 
@@ -262,7 +280,7 @@ class AvitoParse:
                 logger.success("Доступ ограничен: проблема с IP. \nПоследние объявления будут без подробностей")
 
             # Возвращаемся на первое окно
-            self.driver.switch_to.window(windows[0])
+            self.driver.switch_to.window(window=0)
             logger.debug("Не дождался загрузки страницы")
 #            return data
 
@@ -308,39 +326,41 @@ class AvitoParse:
 
         """Информация о помещении"""
         try:
-            about_prop_element = self.driver.find_element(*LocatorAvito.ABOUT_PROP)
-            about_prop_items = about_prop_element.find_elements(By.XPATH,
-                                                                ".//li[contains(@class, 'params-paramsList__item-')]")
-            about_prop_data = {}
-            for item in about_prop_items:
-                try:
-                    header_element = item.find_element(By.XPATH, ".//span[contains(@class, 'desktop-')]")
-                    header = header_element.text
-                    text = item.text[len(header):].strip()
-                    key = header.lower().replace('\xa0', ' ').strip(': ')
-                    value = text.lower().replace('\xa0', ' ')
-                    about_prop_data[key] = value
-                    logger.debug(f"Обработан элемент о помещении: {key} - {value}")
-                except NoSuchElementException:
-                    logger.error("Не удалось обработать элемент списка о помещении")
-            data["about_prop"] = about_prop_data
-        except NoSuchElementException:
-            logger.error("Элемент О помещении не найден")
-        about_prop = data.get("about_prop", {})
-        square_footage_str = about_prop.get("общая площадь", "")
-        square_footage = self.__extract_square_footage(square_footage_str)
+            try:
+                about_prop_element = self.driver.find_element(*LocatorAvito.ABOUT_PROP)
+                about_prop_items = about_prop_element.find_elements(By.XPATH,
+                                                                    ".//li[contains(@class, 'params-paramsList__item-')]")
+                about_prop_data = {}
+                for item in about_prop_items:
+                    try:
+                        header_element = item.find_element(By.XPATH, ".//span[contains(@class, 'desktop-')]")
+                        header = header_element.text
+                        text = item.text[len(header):].strip()
+                        key = header.lower().replace('\xa0', ' ').strip(': ')
+                        value = text.lower().replace('\xa0', ' ')
+                        about_prop_data[key] = value
+                        logger.debug(f"Обработан элемент о помещении: {key} - {value}")
+                    except NoSuchElementException:
+                        logger.error("Не удалось обработать элемент списка о помещении")
+                data["about_prop"] = about_prop_data
+            except NoSuchElementException:
+                logger.error("Элемент О помещении не найден")
+            about_prop = data.get("about_prop", {})
+            square_footage_str = about_prop.get("общая площадь", "")
+            square_footage = self.__extract_square_footage(square_footage_str)
 
-        if square_footage:
-            # Check if the square footage is within the specified range
-            if self.square - 20 <= square_footage <= self.square + 20:
-                data["is_within_range"] = True
+            if square_footage:
+                # Check if the square footage is within the specified range
+                if self.square - 20 <= square_footage <= self.square + 20:
+                    data["is_within_range"] = True
+                else:
+                    data["is_within_range"] = False
             else:
                 data["is_within_range"] = False
-        else:
-            data["is_within_range"] = False
-
+        except Exception as e:
+            logger.error(e)
         """Возвращается на вкладку №1"""
-        self.driver.switch_to.window(windows[0])
+        self.driver.switch_to_window(window=0)
         return data
 
     def is_viewed(self, ads_id: str) -> bool:
@@ -457,21 +477,21 @@ class AvitoParse:
 
     def parse(self):
         """Метод для вызова"""
-        # with SB(uc=True,
-        #         # headed=True if self.debug_mode else False,
-        #         headless=True if not self.debug_mode else False,
-        #         page_load_strategy="eager",
-        #         block_images=True
-        #         #skip_js_waits=True,
-        #         ) as self.driver:
-        self._setup_driver_with_proxy()
-        try:
-            self.__get_url()
-            self.__paginator()
-                # self.send_file_name_to_server()
-        except Exception as error:
-            print({error})
-                #logger.error(f"Ошибка: {error}")
+        with SB(uc=True,
+                # headed=True if self.debug_mode else False,
+                headless=True,
+                page_load_strategy="eager",
+                block_images=True
+                #skip_js_waits=True,
+                ) as self.driver:
+        # self._setup_driver_with_proxy()
+            try:
+                self.__get_url()
+                self.__paginator()
+
+            except Exception as error:
+                print({error})
+                    #logger.error(f"Ошибка: {error}")
 
 
 # if __name__ == '__main__':
@@ -493,39 +513,41 @@ class AvitoParse:
 #     # token = config_prop["Avito"]["TG_TOKEN"]
 #     num_ads = config_cars["Avito"]["NUM_ADS"]
 #     freq = config_cars["Avito"]["FREQ"]
-#     keys = config_cars["Avito"]["KEYS"]
+#     # keys = config_cars["Avito"]["KEYS"]
 #     max_price = config_cars["Avito"].get("MAX_PRICE", "0") or "0"
 #     min_price = config_cars["Avito"].get("MIN_PRICE", "0") or "0"
 #     geo = config_cars["Avito"].get("GEO", "") or ""
+#
+#     # if token and chat_id:
+#     #     params = {
+#     #         'token': token,
+#     #         'chat_id': chat_id
+#     #     }
+#     #     tg_handler = NotificationHandler("telegram", defaults=params)
+#     #
+#     #     """Все логи уровня SUCCESS и выше отсылаются в телегу"""
+#     #     logger.add(tg_handler, level="SUCCESS", format="{message}")
+#
+#     while True:
+#         try:
+#             print('start parsing')
+#             AvitoParse(
+#                 src='auto',
+#                 url=url,
+#                 count=int(num_ads),
+#                 keysword_list=['автомобиль', 'mercedes', 'w124', '1996'],
+#                 max_price=int(max_price),
+#                 min_price=int(min_price),
+#             ).parse()
+#             print('started')
+#             logger.info("Пауза")
+#             time.sleep(int(freq) * 60)
+#         except Exception as error:
+#             logger.error(error)
+#             logger.error('Произошла ошибка, но работа будет продолжена через 30 сек. '
+#                          'Если ошибка повторится несколько раз - перезапустите скрипт.'
+#                          'Если и это не поможет - обратитесь к разработчику по ссылке ниже')
+#             time.sleep(30)
 
-    # if token and chat_id:
-    #     params = {
-    #         'token': token,
-    #         'chat_id': chat_id
-    #     }
-    #     tg_handler = NotificationHandler("telegram", defaults=params)
-    #
-    #     """Все логи уровня SUCCESS и выше отсылаются в телегу"""
-    #     logger.add(tg_handler, level="SUCCESS", format="{message}")
-
-    # while True:
-    #     try:
-    #         print('start parsing')
-    #         AvitoParse(
-    #             src='kok',
-    #             url=url,
-    #             count=int(num_ads),
-    #             keysword_list=keys.split(","),
-    #             max_price=int(max_price),
-    #             min_price=int(min_price),
-    #             geo=geo
-    #         ).parse()
-    #         print('started')
-    #         logger.info("Пауза")
-    #         time.sleep(int(freq) * 60)
-    #     except Exception as error:
-    #         logger.error(error)
-    #         logger.error('Произошла ошибка, но работа будет продолжена через 30 сек. '
-    #                      'Если ошибка повторится несколько раз - перезапустите скрипт.'
-    #                      'Если и это не поможет - обратитесь к разработчику по ссылке ниже')
-    #         time.sleep(30)
+# while True:
+#     AvitoParse(src='auto', url='https://www.avito.ru/all/avtomobili', property_id=123, keysword_list=['автомобиль', 'bmw', 'e34', '1995']).parse()

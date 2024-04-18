@@ -6,6 +6,7 @@ class LocatorAvito:
     NEXT_BTN = (By.CSS_SELECTOR, "[data-marker*='pagination-button/nextPage']")
     ABOUT_PROP = (By.CSS_SELECTOR, "[data-marker='item-view/item-params']")
     TITLES = (By.CSS_SELECTOR, "[data-marker='item']")
+    ID = (By.CSS_SELECTOR, "[data-marker='item-view/item-id']")
     NAME = (By.CSS_SELECTOR, "[itemprop='name']")
     DESCRIPTIONS = (By.CSS_SELECTOR, "[class*='item-description']")
     URL = (By.CSS_SELECTOR, "[data-marker='item-title']")
