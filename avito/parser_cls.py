@@ -10,9 +10,13 @@ from datetime import datetime, timedelta
 from django.urls import reverse
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
+
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.firefox.options import Options
+
 from seleniumbase.common.exceptions import TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
+
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -495,15 +499,15 @@ class AvitoParse:
             options.headless = False  # Если в debug режиме, отключаем headless
         else:
             options.headless = True  # Включаем headless режим
-        options.set_capability('platformName', 'ANY')        # Дополнительные настройки, если требуются
+        # options.set_capability('platformName', 'ANY')        # Дополнительные настройки, если требуются
         options.headless = self.debug_mode  # True or False based on debug mode
         options.add_argument("--no-sandbox")  # Essential for running in Docker
-        options.add_argument("--disable-gpu")  # Sometimes helps with performance in headless
+        # options.add_argument("--disable-gpu")  # Sometimes helps with performance in headless
         # options.add_argument("window-size=1200x600")  # Set window size
 
         # Detailed logging
-        options.add_argument("--enable-logging")
-        options.add_argument("--v=1")
+        # options.add_argument("--enable-logging")
+        # options.add_argument("--v=1")
         # Подключаемся к Selenium Server
         self.driver = webdriver.Remote(
             command_executor=selenium_url,
