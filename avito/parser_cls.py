@@ -496,9 +496,14 @@ class AvitoParse:
         else:
             options.headless = True  # Включаем headless режим
         options.set_capability('platformName', 'ANY')        # Дополнительные настройки, если требуются
-        # options.add_argument("--disable-gpu")  # Если есть проблемы с производительностью
-        # options.add_argument("window-size=1200x600")  # Задаем размер окна
+        options.headless = self.debug_mode  # True or False based on debug mode
+        options.add_argument("--no-sandbox")  # Essential for running in Docker
+        options.add_argument("--disable-gpu")  # Sometimes helps with performance in headless
+        # options.add_argument("window-size=1200x600")  # Set window size
 
+        # Detailed logging
+        options.add_argument("--enable-logging")
+        options.add_argument("--v=1")
         # Подключаемся к Selenium Server
         self.driver = webdriver.Remote(
             command_executor=selenium_url,
