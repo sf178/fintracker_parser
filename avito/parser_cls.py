@@ -504,6 +504,7 @@ class AvitoParse:
         options.add_argument("--no-sandbox")  # Essential for running in Docker
         # options.add_argument("--disable-gpu")  # Sometimes helps with performance in headless
         # options.add_argument("window-size=1200x600")  # Set window size
+        options.add_argument('--disable-dev-shm-usage')
 
         # Detailed logging
         # options.add_argument("--enable-logging")
